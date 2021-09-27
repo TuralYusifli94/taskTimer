@@ -9,38 +9,32 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.demo.tasktimer.databinding.ActivityMainBinding;
+
 public class MainActivity extends AppCompatActivity {
 
-    private Button buttonStart;
-    private TextView textViewResult;
+    ActivityMainBinding binding;
     private static final int REQ_CODE_NAME = 111;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        buttonStart = findViewById(R.id.buttonStart);
-        textViewResult = findViewById(R.id.textViewResult);
+        binding = ActivityMainBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
 
-
-        buttonStart.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(MainActivity.this,TimerActivity.class);
-                startActivityForResult(intent,REQ_CODE_NAME);
-
-            }
-        });
+     binding.buttonStart.setOnClickListener(view -> {
+         Intent intent = new Intent(MainActivity.this,TimerActivity.class);
+         startActivityForResult(intent,REQ_CODE_NAME);});
     }
-
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == REQ_CODE_NAME){
             if (resultCode == RESULT_OK){
-                textViewResult.setText(data.getStringExtra("returnNumber"));
+              binding.textViewResult.setText(data.getStringExtra("returnNumber"));
             }
         }
     }

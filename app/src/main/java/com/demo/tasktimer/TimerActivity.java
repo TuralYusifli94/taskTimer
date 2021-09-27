@@ -1,69 +1,76 @@
 package com.demo.tasktimer;
 
+import static com.demo.tasktimer.Values.TIMER_KEY;
+
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.CountDownTimer;
-import android.util.Log;
-import android.view.View;
-import android.widget.Button;
-import android.widget.TextView;
+import android.widget.Toast;
+
+import com.demo.tasktimer.databinding.ActivityTimerBinding;
 
 public class TimerActivity extends AppCompatActivity {
 
+    ActivityTimerBinding binding;
     SharedPreferences preferences;
     SharedPreferences.Editor editor;
-    private TextView textViewTime;
-    private TextView textViewTimer;
-    private Button buttonStop;
-    private String templ;
-
+    private Long startTime;
+    private long lastSavedTime;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_timer);
-
-        textViewTime = findViewById(R.id.textViewTime);
-        textViewTimer = findViewById(R.id.textViewTimer);
-        buttonStop = findViewById(R.id.buttonStop);
+        binding = ActivityTimerBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
         preferences = getSharedPreferences("lastPreferences", MODE_PRIVATE);
         editor = preferences.edit();
+        startTime = preferences.getLong(TIMER_KEY, 30);
+        startTime = startTime == 0 ? 30 : startTime;
 
-        String time = preferences.getString("te","0");
-        if (textViewTimer.getText().toString().equals("") || textViewTimer.getText().toString() ==null){
-            templ ="60000";
-        }else{
-            templ = textViewTimer.getText().toString();
-        }
+        binding.textViewTime.setText(String.valueOf(startTime));
 
-        CountDownTimer timer = new CountDownTimer(Long.parseLong(templ),1000) {
+        Toast.makeText(getApplicationContext(), String.valueOf(startTime), Toast.LENGTH_SHORT).show();
+
+        CountDownTimer timer = new CountDownTimer(startTime * 1000, 1000) {
             @Override
             public void onTick(long l) {
-                textViewTimer.setText(""+ l/1000);
+                lastSavedTime = l / 1000;
+
+                editor.putLong(TIMER_KEY, lastSavedTime);
+                editor.commit();
+                binding.textViewTimer.setText(String.valueOf(lastSavedTime));
             }
 
             @Override
             public void onFinish() {
-                textViewTimer.setText("finished");
+                Intent intent = new Intent();
+                intent.putExtra("returnNumber", String.valueOf(lastSavedTime));
+                setResult(RESULT_OK, intent);
+                finish();
             }
         };
         timer.start();
-        buttonStop.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                editor.putString("te", textViewTimer.getText().toString());
-                editor.commit();
-                Intent intentReturn = new Intent();
-                intentReturn.putExtra("returnNumber",textViewTimer.getText().toString());
-                setResult(RESULT_OK,intentReturn);
-                finish();
 
-
-            }
+        binding.buttonStop.setOnClickListener(view -> {
+            editor.putLong(TIMER_KEY, lastSavedTime);
+            editor.commit();
+            Toast.makeText(getApplicationContext(), String.valueOf(startTime), Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent();
+            intent.putExtra("returnNumber", String.valueOf(lastSavedTime));
+            setResult(RESULT_OK, intent);
+            finish();
         });
+    }
+
+    @Override
+    public void onBackPressed() {
+        Intent intent = new Intent();
+        intent.putExtra("returnNumber", String.valueOf(lastSavedTime));
+        setResult(RESULT_OK, intent);
+        finish();
     }
 }
