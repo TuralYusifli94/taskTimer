@@ -39,9 +39,6 @@ public class TimerActivity extends AppCompatActivity {
             @Override
             public void onTick(long l) {
                 lastSavedTime = l / 1000;
-
-                editor.putLong(TIMER_KEY, lastSavedTime);
-                editor.commit();
                 binding.textViewTimer.setText(String.valueOf(lastSavedTime));
             }
 
@@ -58,7 +55,6 @@ public class TimerActivity extends AppCompatActivity {
         binding.buttonStop.setOnClickListener(view -> {
             editor.putLong(TIMER_KEY, lastSavedTime);
             editor.commit();
-            Toast.makeText(getApplicationContext(), String.valueOf(startTime), Toast.LENGTH_SHORT).show();
             Intent intent = new Intent();
             intent.putExtra("returnNumber", String.valueOf(lastSavedTime));
             setResult(RESULT_OK, intent);
@@ -68,6 +64,8 @@ public class TimerActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
+        editor.putLong(TIMER_KEY, lastSavedTime);
+        editor.commit();
         Intent intent = new Intent();
         intent.putExtra("returnNumber", String.valueOf(lastSavedTime));
         setResult(RESULT_OK, intent);
